@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hostel Management System</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f13;
+    --surface: #17171e;
+    --surface2: #1e1e28;
+    --border: #2a2a38;
+    --accent: #6c63ff;
+    --accent2: #a78bfa;
+    --text: #e8e8f0;
+    --muted: #6b6b80;
+    --success: #34d399;
+    --warning: #fbbf24;
+    --danger: #f87171;
+    --info: #60a5fa;
+    --radius: 10px;
+    --radius-lg: 16px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    font-size: 14px;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    width: 220px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    top: 0; left: 0; bottom: 0;
+    z-index: 10;
+  }
+
+  .logo {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    letter-spacing: -0.3px;
+  }
+
+  .logo-sub {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 2px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .nav {
+    padding: 12px 8px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: var(--radius);
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 13.5px;
+    font-weight: 400;
+    transition: all 0.15s;
+    border: 1px solid transparent;
+    user-select: none;
+  }
+
+  .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+  .nav-item:hover {
+    color: var(--text);
+    background: var(--surface2);
+  }
+
+  .nav-item.active {
+    color: var(--text);
+    background: rgba(108,99,255,0.15);
+    border-color: rgba(108,99,255,0.3);
+  }
+
+  .nav-badge {
+    margin-left: auto;
+    background: var(--accent);
+    color: white;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 99px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .sidebar-footer {
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* Main */
+  .main {
+    margin-left: 220px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  .topbar {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 5;
+  }
+
+  .topbar h1 {
+    font-size: 18px;
+    font-weight: 600;
+    letter-spacing: -0.4px;
+  }
+
+  .topbar-actions { display: flex; gap: 10px; align-items: center; }
+
+  .content { padding: 28px; flex: 1; }
+
+  .tab { display: none; }
+  .tab.active { display: block; }
+
+  /* Stats grid */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    opacity: 0.07;
+    transform: translate(20px, -20px);
+  }
+
+  .stat-card.purple::before { background: var(--accent); }
+  .stat-card.green::before { background: var(--success); }
+  .stat-card.amber::before { background: var(--warning); }
+  .stat-card.blue::before { background: var(--info); }
+
+  .stat-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 12px;
+  }
+
+  .stat-icon svg { width: 16px; height: 16px; }
+  .stat-icon.purple { background: rgba(108,99,255,0.15); color: var(--accent2); }
+  .stat-icon.green { background: rgba(52,211,153,0.12); color: var(--success); }
+  .stat-icon.amber { background: rgba(251,191,36,0.12); color: var(--warning); }
+  .stat-icon.blue { background: rgba(96,165,250,0.12); color: var(--info); }
+
+  .stat-value {
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: -1px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .stat-label {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .card-title {
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  /* Table */
+  table { width: 100%; border-collapse: collapse; }
+
+  th {
+    text-align: left;
+    padding: 10px 20px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    background: rgba(255,255,255,0.02);
+    border-bottom: 1px solid var(--border);
+    font-family: 'DM Mono', monospace;
+  }
+
+  td {
+    padding: 12px 20px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: middle;
+    font-size: 13.5px;
+  }
+
+  tr:last-child td { border-bottom: none; }
+
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .empty-row td {
+    text-align: center;
+    color: var(--muted);
+    padding: 40px 20px;
+    font-size: 13px;
+  }
+
+  /* Buttons */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text);
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+
+  .btn svg { width: 14px; height: 14px; }
+  .btn:hover { background: var(--surface2); border-color: rgba(255,255,255,0.15); }
+
+  .btn-primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+  }
+  .btn-primary:hover { background: #5a52e0; border-color: #5a52e0; }
+
+  .btn-sm { padding: 5px 12px; font-size: 12px; }
+
+  .btn-danger { color: var(--danger); border-color: rgba(248,113,113,0.3); }
+  .btn-danger:hover { background: rgba(248,113,113,0.1); }
+
+  .btn-success { color: var(--success); border-color: rgba(52,211,153,0.3); }
+  .btn-success:hover { background: rgba(52,211,153,0.1); }
+
+  /* Badges */
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 9px;
+    border-radius: 99px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .badge-green { background: rgba(52,211,153,0.12); color: var(--success); border: 1px solid rgba(52,211,153,0.2); }
+  .badge-amber { background: rgba(251,191,36,0.12); color: var(--warning); border: 1px solid rgba(251,191,36,0.2); }
+  .badge-red { background: rgba(248,113,113,0.12); color: var(--danger); border: 1px solid rgba(248,113,113,0.2); }
+  .badge-blue { background: rgba(96,165,250,0.12); color: var(--info); border: 1px solid rgba(96,165,250,0.2); }
+  .badge-purple { background: rgba(108,99,255,0.12); color: var(--accent2); border: 1px solid rgba(108,99,255,0.2); }
+  .badge-gray { background: rgba(255,255,255,0.06); color: var(--muted); border: 1px solid var(--border); }
+
+  /* Avatar */
+  .avatar {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    background: rgba(108,99,255,0.2);
+    color: var(--accent2);
+    font-size: 11px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 0;
+  }
+
+  .avatar-row { display: flex; align-items: center; gap: 10px; }
+
+  /* Modal */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 24px;
+    width: 400px;
+    max-width: 95vw;
+    animation: modalIn 0.2s ease;
+  }
+
+  @keyframes modalIn {
+    from { opacity: 0; transform: scale(0.96) translateY(8px); }
+    to   { opacity: 1; transform: scale(1)   translateY(0); }
+  }
+
+  .modal h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    letter-spacing: -0.3px;
+  }
+
+  .form-group { margin-bottom: 14px; }
+
+  .form-group label {
+    display: block;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 6px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13.5px;
+    padding: 9px 12px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    border-color: var(--accent);
+  }
+
+  .form-group select option { background: var(--surface2); }
+
+  .modal-footer {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* Toast */
+  #toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 18px;
+    font-size: 13px;
+    z-index: 999;
+    display: none;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    animation: slideUp 0.25s ease;
+    max-width: 320px;
+  }
+
+  #toast.show { display: flex; }
+  #toast.success { border-color: rgba(52,211,153,0.4); }
+  #toast.error { border-color: rgba(248,113,113,0.4); }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Confirm dialog */
+  .confirm-modal { width: 340px; }
+  .confirm-modal p { color: var(--muted); font-size: 13.5px; line-height: 1.6; margin-bottom: 4px; }
+
+  /* Warden card */
+  .warden-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 32px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+
+  .warden-avatar {
+    width: 72px; height: 72px;
+    border-radius: 50%;
+    background: rgba(108,99,255,0.15);
+    border: 2px solid rgba(108,99,255,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--accent2);
+    flex-shrink: 0;
+  }
+
+  .warden-info h2 { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+  .warden-info p { color: var(--muted); font-size: 13.5px; }
+  .warden-msg {
+    margin-top: 12px;
+    background: rgba(108,99,255,0.08);
+    border: 1px solid rgba(108,99,255,0.2);
+    border-radius: var(--radius);
+    padding: 10px 14px;
+    font-size: 13.5px;
+    color: var(--accent2);
+  }
+
+  /* Room grid */
+  .room-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 14px;
+    padding: 20px;
+  }
+
+  .room-card {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    transition: border-color 0.15s;
+  }
+
+  .room-card:hover { border-color: rgba(255,255,255,0.15); }
+  .room-card.occupied { border-color: rgba(251,191,36,0.25); }
+
+  .room-number { font-family: 'DM Mono', monospace; font-size: 22px; font-weight: 500; margin-bottom: 6px; }
+  .room-type { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+  .room-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
+
+  .toggle-view { display: flex; gap: 6px; }
+  .toggle-btn {
+    padding: 5px 10px; font-size: 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .toggle-btn.active { background: var(--surface2); color: var(--text); border-color: rgba(255,255,255,0.15); }
+
+  /* Fee summary */
+  .fee-summary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .scrollable { overflow-x: auto; }
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+  <div class="logo">
+    <div class="logo-title">🏠 Hostel Manager</div>
+    <div class="logo-sub">v1.0 · session storage</div>
+  </div>
+  <nav class="nav">
+    <div class="nav-item active" onclick="showTab('dashboard',this)">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1" stroke-width="2"/></svg>
+      Dashboard
+    </div>
+    <div class="nav-item" onclick="showTab('students',this)">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke-width="2"/><circle cx="9" cy="7" r="4" stroke-width="2"/><path d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke-width="2"/></svg>
+      Students
+      <span class="nav-badge" id="nb-students">0</span>
+    </div>
+    <div class="nav-item" onclick="showTab('rooms',this)">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke-width="2"/><polyline points="9 22 9 12 15 12 15 22" stroke-width="2"/></svg>
+      Rooms
+      <span class="nav-badge" id="nb-rooms">0</span>
+    </div>
+    <div class="nav-item" onclick="showTab('allocate',this)">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke-width="2"/><circle cx="12" cy="10" r="3" stroke-width="2"/></svg>
+      Allocation
+    </div>
+    <div class="nav-item" onclick="showTab('fees',this)">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23" stroke-width="2"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke-width="2"/></svg>
+      Fees
+    </div>
+    <div class="nav-item" onclick="showTab('maintenance',this)">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" stroke-width="2"/></svg>
+      Maintenance
+      <span class="nav-badge" id="nb-maintenance" style="display:none;background:#f87171;">0</span>
+    </div>
+    <div class="nav-item" onclick="showTab('warden',this)">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" stroke-width="2"/></svg>
+      Warden
+    </div>
+  </nav>
+  <div class="sidebar-footer" id="sidebar-time"></div>
+</aside>
+
+<!-- Main -->
+<main class="main">
+  <div class="topbar">
+    <h1 id="page-title">Dashboard</h1>
+    <div class="topbar-actions">
+      <button class="btn" onclick="exportData()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke-width="2"/><polyline points="7 10 12 15 17 10" stroke-width="2"/><line x1="12" y1="15" x2="12" y2="3" stroke-width="2"/></svg>
+        Export JSON
+      </button>
+      <button class="btn btn-primary" id="topbar-add-btn" onclick="topbarAdd()">
+        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="14" height="14"><line x1="12" y1="5" x2="12" y2="19" stroke-width="2"/><line x1="5" y1="12" x2="19" y2="12" stroke-width="2"/></svg>
+        <span id="topbar-add-label">Quick Add</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div id="tab-dashboard" class="tab active">
+      <div class="stats">
+        <div class="stat-card purple">
+          <div class="stat-icon purple">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke-width="2"/><circle cx="9" cy="7" r="4" stroke-width="2"/></svg>
+          </div>
+          <div class="stat-value" id="s-students">0</div>
+          <div class="stat-label">Total students</div>
+        </div>
+        <div class="stat-card green">
+          <div class="stat-icon green">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke-width="2"/><polyline points="9 22 9 12 15 12 15 22" stroke-width="2"/></svg>
+          </div>
+          <div class="stat-value" id="s-rooms">0</div>
+          <div class="stat-label">Total rooms</div>
+        </div>
+        <div class="stat-card amber">
+          <div class="stat-icon amber">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke-width="2"/><polyline points="22 4 12 14.01 9 11.01" stroke-width="2"/></svg>
+          </div>
+          <div class="stat-value" id="s-occupied">0</div>
+          <div class="stat-label">Rooms occupied</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="stat-icon blue">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23" stroke-width="2"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke-width="2"/></svg>
+          </div>
+          <div class="stat-value" id="s-fees">Rs 0</div>
+          <div class="stat-label">Total fees collected</div>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Recent students</span></div>
+          <table><thead><tr><th>Name</th><th>Room</th><th>Fee</th></tr></thead>
+          <tbody id="dash-students"></tbody></table>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">Maintenance overview</span></div>
+          <table><thead><tr><th>Issue</th><th>Status</th></tr></thead>
+          <tbody id="dash-maintenance"></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- STUDENTS -->
+    <div id="tab-students" class="tab">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">All students</span>
+          <button class="btn btn-primary btn-sm" onclick="openModal('modal-student')">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="13" height="13"><line x1="12" y1="5" x2="12" y2="19" stroke-width="2"/><line x1="5" y1="12" x2="19" y2="12" stroke-width="2"/></svg>
+            Add student
+          </button>
+        </div>
+        <div class="scrollable">
+          <table>
+            <thead><tr><th>#</th><th>Name</th><th>Room</th><th>Fee paid</th><th>Actions</th></tr></thead>
+            <tbody id="student-table"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROOMS -->
+    <div id="tab-rooms" class="tab">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">All rooms</span>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <div class="toggle-view">
+              <button class="toggle-btn active" id="view-table-btn" onclick="setRoomView('table')">Table</button>
+              <button class="toggle-btn" id="view-grid-btn" onclick="setRoomView('grid')">Grid</button>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="openModal('modal-room')">
+              <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="13" height="13"><line x1="12" y1="5" x2="12" y2="19" stroke-width="2"/><line x1="5" y1="12" x2="19" y2="12" stroke-width="2"/></svg>
+              Add room
+            </button>
+          </div>
+        </div>
+        <div id="room-table-view" class="scrollable">
+          <table>
+            <thead><tr><th>Room No.</th><th>Type</th><th>Status</th><th>Assigned to</th><th>Actions</th></tr></thead>
+            <tbody id="room-table"></tbody>
+          </table>
+        </div>
+        <div id="room-grid-view" style="display:none;">
+          <div class="room-grid" id="room-grid"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ALLOCATION -->
+    <div id="tab-allocate" class="tab">
+      <div class="card" style="margin-bottom:16px;">
+        <div class="card-header">
+          <span class="card-title">Allocate room to student</span>
+        </div>
+        <div style="padding:20px;display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:12px;align-items:end;">
+          <div class="form-group" style="margin:0;">
+            <label>Select student</label>
+            <select id="alloc-student-sel"></select>
+          </div>
+          <div class="form-group" style="margin:0;">
+            <label>Select free room</label>
+            <select id="alloc-room-sel"></select>
+          </div>
+          <div></div>
+          <button class="btn btn-primary" onclick="allocateRoom()">Allocate room</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="card-title">Current allocations</span></div>
+        <table>
+          <thead><tr><th>Student</th><th>Room</th><th>Room type</th><th>Actions</th></tr></thead>
+          <tbody id="alloc-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- FEES -->
+    <div id="tab-fees" class="tab">
+      <div class="fee-summary">
+        <div class="card" style="margin:0;">
+          <div class="card-header">
+            <span class="card-title">Add payment</span>
+          </div>
+          <div style="padding:20px;display:flex;flex-direction:column;gap:12px;">
+            <div class="form-group" style="margin:0;"><label>Student</label><select id="fee-student-sel"></select></div>
+            <div class="form-group" style="margin:0;"><label>Amount (Rs)</label><input type="number" id="fee-amount" placeholder="e.g. 5000" min="1"></div>
+            <button class="btn btn-primary" onclick="addPayment()" style="width:100%;justify-content:center;">Add payment</button>
+          </div>
+        </div>
+        <div class="stat-card blue" style="display:flex;flex-direction:column;justify-content:center;">
+          <div class="stat-icon blue" style="margin-bottom:8px;">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23" stroke-width="2"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke-width="2"/></svg>
+          </div>
+          <div class="stat-value" id="fee-total-display">Rs 0</div>
+          <div class="stat-label">Total collected</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="card-title">Fee records per student</span></div>
+        <table>
+          <thead><tr><th>Student</th><th>Room</th><th>Total paid</th><th>Actions</th></tr></thead>
+          <tbody id="fee-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- MAINTENANCE -->
+    <div id="tab-maintenance" class="tab">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Maintenance requests</span>
+          <button class="btn btn-primary btn-sm" onclick="openModal('modal-maintenance')">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" width="13" height="13"><line x1="12" y1="5" x2="12" y2="19" stroke-width="2"/><line x1="5" y1="12" x2="19" y2="12" stroke-width="2"/></svg>
+            New request
+          </button>
+        </div>
+        <table>
+          <thead><tr><th>#</th><th>Issue</th><th>Room</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="maintenance-table"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- WARDEN -->
+    <div id="tab-warden" class="tab">
+      <div class="warden-card">
+        <div class="warden-avatar">W</div>
+        <div class="warden-info">
+          <h2>Hostel Warden</h2>
+          <p>Senior administrator · Managing all hostel operations</p>
+          <div class="warden-msg">🔑 Warden is managing the hostel.</div>
+          <div style="margin-top:16px;display:flex;gap:10px;">
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 16px;text-align:center;">
+              <div style="font-size:18px;font-weight:600;font-family:'DM Mono',monospace;" id="w-students">0</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px;">Students</div>
+            </div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 16px;text-align:center;">
+              <div style="font-size:18px;font-weight:600;font-family:'DM Mono',monospace;" id="w-rooms">0</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px;">Rooms</div>
+            </div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 16px;text-align:center;">
+              <div style="font-size:18px;font-weight:600;font-family:'DM Mono',monospace;" id="w-pending">0</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px;">Pending issues</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<!-- MODALS -->
+
+<!-- Add Student -->
+<div class="modal-overlay" id="modal-student">
+  <div class="modal">
+    <h3>Add student</h3>
+    <div class="form-group"><label>Full name</label><input type="text" id="inp-sname" placeholder="e.g. Ali Hassan" onkeydown="if(event.key==='Enter')addStudent()"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-student')">Cancel</button>
+      <button class="btn btn-primary" onclick="addStudent()">Add student</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Student -->
+<div class="modal-overlay" id="modal-edit-student">
+  <div class="modal">
+    <h3>Edit student</h3>
+    <input type="hidden" id="edit-student-idx">
+    <div class="form-group"><label>Full name</label><input type="text" id="inp-edit-sname" onkeydown="if(event.key==='Enter')saveEditStudent()"></div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-edit-student')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveEditStudent()">Save changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Room -->
+<div class="modal-overlay" id="modal-room">
+  <div class="modal">
+    <h3>Add room</h3>
+    <div class="form-group"><label>Room number</label><input type="number" id="inp-rnum" placeholder="e.g. 101" min="1"></div>
+    <div class="form-group"><label>Room type</label>
+      <select id="inp-rtype">
+        <option value="Single">Single room</option>
+        <option value="Double">Double room</option>
+      </select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-room')">Cancel</button>
+      <button class="btn btn-primary" onclick="addRoom()">Add room</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Maintenance -->
+<div class="modal-overlay" id="modal-maintenance">
+  <div class="modal">
+    <h3>New maintenance request</h3>
+    <div class="form-group"><label>Room (optional)</label>
+      <select id="inp-mroom"><option value="">— General —</option></select>
+    </div>
+    <div class="form-group"><label>Issue description</label>
+      <textarea id="inp-issue" rows="3" placeholder="Describe the issue..."></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-maintenance')">Cancel</button>
+      <button class="btn btn-primary" onclick="addMaintenance()">Submit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Confirm delete -->
+<div class="modal-overlay" id="modal-confirm">
+  <div class="modal confirm-modal">
+    <h3 id="confirm-title">Confirm delete</h3>
+    <p id="confirm-msg"></p>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('modal-confirm')">Cancel</button>
+      <button class="btn btn-danger" id="confirm-ok-btn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+  // State
+  let state = {
+    students: [],
+    rooms: [],
+    maintenance: [],
+    payments: []
+  };
+
+  let currentTab = 'dashboard';
+  let roomView = 'table';
+
+  // --- UTILITIES ---
+  function initials(name) {
+    return name.trim().split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  }
+
+  function toast(msg, type='success') {
+    const t = document.getElementById('toast');
+    t.textContent = (type==='success'?'✓ ':'✕ ') + msg;
+    t.className = 'show ' + type;
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => t.className='', 2800);
+  }
+
+  function openModal(id) {
+    if (id === 'modal-maintenance') populateMaintenanceRoom();
+    document.getElementById(id).classList.add('open');
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('open');
+  }
+
+  function confirm(title, msg, cb) {
+    document.getElementById('confirm-title').textContent = title;
+    document.getElementById('confirm-msg').textContent = msg;
+    const btn = document.getElementById('confirm-ok-btn');
+    btn.onclick = () => { closeModal('modal-confirm'); cb(); };
+    openModal('modal-confirm');
+  }
+
+  // --- TABS ---
+  const tabConfig = {
+    dashboard:   { title: 'Dashboard',   addLabel: 'Quick Add',      addFn: null },
+    students:    { title: 'Students',    addLabel: 'Add student',     addFn: ()=>openModal('modal-student') },
+    rooms:       { title: 'Rooms',       addLabel: 'Add room',        addFn: ()=>openModal('modal-room') },
+    allocate:    { title: 'Allocation',  addLabel: 'Allocate room',   addFn: allocateRoom },
+    fees:        { title: 'Fees',        addLabel: 'Add payment',     addFn: addPayment },
+    maintenance: { title: 'Maintenance', addLabel: 'New request',     addFn: ()=>openModal('modal-maintenance') },
+    warden:      { title: 'Warden',      addLabel: null,              addFn: null }
+  };
+
+  function showTab(tab, el) {
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    document.getElementById('tab-'+tab).classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+    el.classList.add('active');
+    currentTab = tab;
+    const cfg = tabConfig[tab];
+    document.getElementById('page-title').textContent = cfg.title;
+    const btn = document.getElementById('topbar-add-btn');
+    const lbl = document.getElementById('topbar-add-label');
+    if (cfg.addLabel) {
+      btn.style.display = '';
+      lbl.textContent = cfg.addLabel;
+    } else {
+      btn.style.display = 'none';
+    }
+    if (tab === 'allocate') refreshAllocateSelects();
+    if (tab === 'fees') refreshFeeSelect();
+    renderAll();
+  }
+
+  function topbarAdd() {
+    const cfg = tabConfig[currentTab];
+    if (cfg && cfg.addFn) cfg.addFn();
+  }
+
+  // --- STUDENTS ---
+  function addStudent() {
+    const name = document.getElementById('inp-sname').value.trim();
+    if (!name) { toast('Please enter a name', 'error'); return; }
+    state.students.push({ id: Date.now(), name, room: null, fee: 0 });
+    document.getElementById('inp-sname').value = '';
+    closeModal('modal-student');
+    toast('Student added: ' + name);
+    renderAll();
+  }
+
+  function editStudent(idx) {
+    document.getElementById('edit-student-idx').value = idx;
+    document.getElementById('inp-edit-sname').value = state.students[idx].name;
+    openModal('modal-edit-student');
+    setTimeout(()=>document.getElementById('inp-edit-sname').focus(),200);
+  }
+
+  function saveEditStudent() {
+    const idx = parseInt(document.getElementById('edit-student-idx').value);
+    const name = document.getElementById('inp-edit-sname').value.trim();
+    if (!name) { toast('Name cannot be empty','error'); return; }
+    state.students[idx].name = name;
+    closeModal('modal-edit-student');
+    toast('Student updated');
+    renderAll();
+  }
+
+  function deleteStudent(idx) {
+    const s = state.students[idx];
+    confirm('Delete student', `Remove "${s.name}" from the system? Their room will be freed.`, ()=>{
+      if (s.room !== null) {
+        const room = state.rooms.find(r=>r.number===s.room);
+        if (room) room.occupied = false;
+      }
+      state.students.splice(idx, 1);
+      toast('Student removed');
+      renderAll();
+    });
+  }
+
+  // --- ROOMS ---
+  function addRoom() {
+    const num = parseInt(document.getElementById('inp-rnum').value);
+    const type = document.getElementById('inp-rtype').value;
+    if (!num || num < 1) { toast('Enter a valid room number','error'); return; }
+    if (state.rooms.find(r=>r.number===num)) { toast('Room '+num+' already exists','error'); return; }
+    state.rooms.push({ number: num, type, occupied: false });
+    document.getElementById('inp-rnum').value = '';
+    closeModal('modal-room');
+    toast('Room '+num+' added');
+    renderAll();
+  }
+
+  function deleteRoom(idx) {
+    const r = state.rooms[idx];
+    if (r.occupied) { toast('Deallocate the room first','error'); return; }
+    confirm('Delete room', `Remove room ${r.number} (${r.type})?`, ()=>{
+      state.rooms.splice(idx,1);
+      toast('Room removed');
+      renderAll();
+    });
+  }
+
+  function setRoomView(v) {
+    roomView = v;
+    document.getElementById('room-table-view').style.display = v==='table'?'':'none';
+    document.getElementById('room-grid-view').style.display  = v==='grid' ?'':'none';
+    document.getElementById('view-table-btn').className = 'toggle-btn'+(v==='table'?' active':'');
+    document.getElementById('view-grid-btn').className  = 'toggle-btn'+(v==='grid' ?' active':'');
+    renderAll();
+  }
+
+  // --- ALLOCATION ---
+  function refreshAllocateSelects() {
+    const ss = document.getElementById('alloc-student-sel');
+    const unassigned = state.students.filter(s=>s.room===null);
+    ss.innerHTML = unassigned.length
+      ? unassigned.map((s,i)=>`<option value="${state.students.indexOf(s)}">${s.name}</option>`).join('')
+      : '<option value="">No unassigned students</option>';
+
+    const rs = document.getElementById('alloc-room-sel');
+    const free = state.rooms.filter(r=>!r.occupied);
+    rs.innerHTML = free.length
+      ? free.map(r=>`<option value="${r.number}">Room ${r.number} (${r.type})</option>`).join('')
+      : '<option value="">No free rooms</option>';
+  }
+
+  function allocateRoom() {
+    refreshAllocateSelects();
+    const si = parseInt(document.getElementById('alloc-student-sel').value);
+    const rnum = parseInt(document.getElementById('alloc-room-sel').value);
+    if (isNaN(si)||isNaN(rnum)) { toast('Select a student and a free room','error'); return; }
+    const room = state.rooms.find(r=>r.number===rnum);
+    if (!room||room.occupied) { toast('Room not available','error'); return; }
+    state.students[si].room = rnum;
+    room.occupied = true;
+    toast(`Room ${rnum} allocated to ${state.students[si].name}`);
+    refreshAllocateSelects();
+    renderAll();
+  }
+
+  function deallocate(si) {
+    const s = state.students[si];
+    confirm('Deallocate room', `Remove ${s.name} from room ${s.room}?`, ()=>{
+      const room = state.rooms.find(r=>r.number===s.room);
+      if (room) room.occupied = false;
+      s.room = null;
+      toast('Room deallocated');
+      renderAll();
+    });
+  }
+
+  // --- FEES ---
+  function refreshFeeSelect() {
+    const sel = document.getElementById('fee-student-sel');
+    sel.innerHTML = state.students.length
+      ? state.students.map((s,i)=>`<option value="${i}">${s.name}</option>`).join('')
+      : '<option>No students</option>';
+  }
+
+  function addPayment() {
+    refreshFeeSelect();
+    const si = parseInt(document.getElementById('fee-student-sel').value);
+    const amt = parseFloat(document.getElementById('fee-amount').value);
+    if (isNaN(si)||isNaN(amt)||amt<=0) { toast('Enter valid student and amount','error'); return; }
+    state.students[si].fee += amt;
+    state.payments.push({ studentIdx: si, name: state.students[si].name, amount: amt, date: new Date().toLocaleDateString() });
+    document.getElementById('fee-amount').value = '';
+    toast(`Rs ${amt.toLocaleString()} added for ${state.students[si].name}`);
+    renderAll();
+  }
+
+  // --- MAINTENANCE ---
+  function populateMaintenanceRoom() {
+    const sel = document.getElementById('inp-mroom');
+    sel.innerHTML = '<option value="">— General —</option>' +
+      state.rooms.map(r=>`<option value="${r.number}">Room ${r.number}</option>`).join('');
+  }
+
+  function addMaintenance() {
+    const issue = document.getElementById('inp-issue').value.trim();
+    const room = document.getElementById('inp-mroom').value;
+    if (!issue) { toast('Describe the issue','error'); return; }
+    state.maintenance.push({ id: Date.now(), issue, room: room||null, status: 'Pending' });
+    document.getElementById('inp-issue').value = '';
+    closeModal('modal-maintenance');
+    toast('Maintenance request submitted');
+    renderAll();
+  }
+
+  function resolveIssue(idx) {
+    state.maintenance[idx].status = 'Resolved';
+    toast('Issue marked as resolved');
+    renderAll();
+  }
+
+  function deleteIssue(idx) {
+    confirm('Delete request', `Remove this maintenance request?`, ()=>{
+      state.maintenance.splice(idx,1);
+      toast('Request removed');
+      renderAll();
+    });
+  }
+
+  // --- EXPORT ---
+  function exportData() {
+    const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'hostel_data.json';
+    a.click();
+    toast('Data exported');
+  }
+
+  // --- RENDER ---
+  function renderAll() {
+    const totalFees = state.students.reduce((a,s)=>a+s.fee,0);
+    const occupied  = state.rooms.filter(r=>r.occupied).length;
+    const pending   = state.maintenance.filter(m=>m.status==='Pending').length;
+
+    // Stats
+    set('s-students', state.students.length);
+    set('s-rooms', state.rooms.length);
+    set('s-occupied', occupied);
+    set('s-fees', 'Rs '+totalFees.toLocaleString());
+    set('nb-students', state.students.length);
+    set('nb-rooms', state.rooms.length);
+    set('w-students', state.students.length);
+    set('w-rooms', state.rooms.length);
+    set('w-pending', pending);
+    set('fee-total-display', 'Rs '+totalFees.toLocaleString());
+
+    const nb = document.getElementById('nb-maintenance');
+    if (pending > 0) { nb.style.display=''; nb.textContent=pending; } else { nb.style.display='none'; }
+
+    // Dashboard students
+    const ds = document.getElementById('dash-students');
+    ds.innerHTML = state.students.length
+      ? state.students.slice().reverse().slice(0,5).map(s=>`
+          <tr>
+            <td><div class="avatar-row"><div class="avatar">${initials(s.name)}</div>${s.name}</div></td>
+            <td>${s.room!==null?badge(s.room,'green'):badge('—','gray')}</td>
+            <td style="font-family:'DM Mono',monospace;">Rs ${s.fee.toLocaleString()}</td>
+          </tr>`).join('')
+      : '<tr class="empty-row"><td colspan="3">No students yet</td></tr>';
+
+    // Dashboard maintenance
+    const dm = document.getElementById('dash-maintenance');
+    dm.innerHTML = state.maintenance.length
+      ? state.maintenance.slice().reverse().slice(0,5).map(m=>`
+          <tr>
+            <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${m.issue}</td>
+            <td>${badge(m.status, m.status==='Resolved'?'green':'amber')}</td>
+          </tr>`).join('')
+      : '<tr class="empty-row"><td colspan="2">No requests</td></tr>';
+
+    // Students table
+    const st = document.getElementById('student-table');
+    st.innerHTML = state.students.length
+      ? state.students.map((s,i)=>`
+          <tr>
+            <td style="color:var(--muted);font-family:'DM Mono',monospace;">${i+1}</td>
+            <td><div class="avatar-row"><div class="avatar">${initials(s.name)}</div>${s.name}</div></td>
+            <td>${s.room!==null?badge('Room '+s.room,'green'):badge('Unassigned','gray')}</td>
+            <td style="font-family:'DM Mono',monospace;">Rs ${s.fee.toLocaleString()}</td>
+            <td>
+              <div style="display:flex;gap:6px;">
+                <button class="btn btn-sm" onclick="editStudent(${i})">Edit</button>
+                <button class="btn btn-sm btn-danger" onclick="deleteStudent(${i})">Delete</button>
+              </div>
+            </td>
+          </tr>`).join('')
+      : '<tr class="empty-row"><td colspan="5">No students added yet. Click "Add student" to begin.</td></tr>';
+
+    // Rooms table
+    const rt = document.getElementById('room-table');
+    rt.innerHTML = state.rooms.length
+      ? state.rooms.map((r,i)=>{
+          const assignee = state.students.find(s=>s.room===r.number);
+          return `<tr>
+            <td style="font-family:'DM Mono',monospace;font-weight:500;">Room ${r.number}</td>
+            <td>${badge(r.type, r.type==='Single'?'blue':'purple')}</td>
+            <td>${badge(r.occupied?'Occupied':'Free', r.occupied?'amber':'green')}</td>
+            <td>${assignee?`<div class="avatar-row"><div class="avatar">${initials(assignee.name)}</div>${assignee.name}</div>`:badge('—','gray')}</td>
+            <td><button class="btn btn-sm btn-danger" onclick="deleteRoom(${i})">Remove</button></td>
+          </tr>`;}).join('')
+      : '<tr class="empty-row"><td colspan="5">No rooms added yet. Click "Add room" to begin.</td></tr>';
+
+    // Rooms grid
+    const rg = document.getElementById('room-grid');
+    rg.innerHTML = state.rooms.length
+      ? state.rooms.map((r,i)=>{
+          const assignee = state.students.find(s=>s.room===r.number);
+          return `<div class="room-card ${r.occupied?'occupied':''}">
+            <div class="room-number">${r.number}</div>
+            <div class="room-type">${r.type} room</div>
+            ${assignee?`<div style="font-size:12px;color:var(--muted);">${assignee.name}</div>`:''}
+            <div class="room-footer">
+              ${badge(r.occupied?'Occupied':'Free', r.occupied?'amber':'green')}
+              <button class="btn btn-sm btn-danger" onclick="deleteRoom(${i})" style="padding:3px 8px;font-size:11px;">✕</button>
+            </div>
+          </div>`;}).join('')
+      : '<div style="padding:40px;text-align:center;color:var(--muted);">No rooms yet</div>';
+
+    // Allocation table
+    const at = document.getElementById('alloc-table');
+    const allocated = state.students.filter(s=>s.room!==null);
+    at.innerHTML = allocated.length
+      ? allocated.map((s,_)=>{
+          const si = state.students.indexOf(s);
+          const room = state.rooms.find(r=>r.number===s.room);
+          return `<tr>
+            <td><div class="avatar-row"><div class="avatar">${initials(s.name)}</div>${s.name}</div></td>
+            <td style="font-family:'DM Mono',monospace;">Room ${s.room}</td>
+            <td>${badge(room?room.type:'?', 'blue')}</td>
+            <td><button class="btn btn-sm btn-danger" onclick="deallocate(${si})">Deallocate</button></td>
+          </tr>`;}).join('')
+      : '<tr class="empty-row"><td colspan="4">No rooms allocated yet</td></tr>';
+
+    // Fee table
+    const ft = document.getElementById('fee-table');
+    ft.innerHTML = state.students.length
+      ? state.students.map((s,i)=>`
+          <tr>
+            <td><div class="avatar-row"><div class="avatar">${initials(s.name)}</div>${s.name}</div></td>
+            <td>${s.room!==null?badge('Room '+s.room,'green'):badge('—','gray')}</td>
+            <td style="font-family:'DM Mono',monospace;font-weight:500;">Rs ${s.fee.toLocaleString()}</td>
+            <td>
+              <button class="btn btn-sm" onclick="document.getElementById('fee-student-sel').value=${i};document.getElementById('fee-amount').focus()">Add payment</button>
+            </td>
+          </tr>`).join('')
+      : '<tr class="empty-row"><td colspan="4">No students found. Add students first.</td></tr>';
+
+    // Maintenance table
+    const mt = document.getElementById('maintenance-table');
+    mt.innerHTML = state.maintenance.length
+      ? state.maintenance.map((m,i)=>`
+          <tr>
+            <td style="color:var(--muted);font-family:'DM Mono',monospace;">${i+1}</td>
+            <td>${m.issue}</td>
+            <td>${m.room?badge('Room '+m.room,'blue'):badge('General','gray')}</td>
+            <td>${badge(m.status, m.status==='Resolved'?'green':'amber')}</td>
+            <td>
+              <div style="display:flex;gap:6px;">
+                ${m.status==='Pending'?`<button class="btn btn-sm btn-success" onclick="resolveIssue(${i})">Resolve</button>`:''}
+                <button class="btn btn-sm btn-danger" onclick="deleteIssue(${i})">Delete</button>
+              </div>
+            </td>
+          </tr>`).join('')
+      : '<tr class="empty-row"><td colspan="5">No maintenance requests yet</td></tr>';
+  }
+
+  function set(id, val) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = val;
+  }
+
+  function badge(text, color) {
+    return `<span class="badge badge-${color}">${text}</span>`;
+  }
+
+  // Clock
+  function updateClock() {
+    const now = new Date();
+    document.getElementById('sidebar-time').textContent =
+      now.toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) + ' · ' +
+      now.toLocaleDateString([], {month:'short',day:'numeric'});
+  }
+  setInterval(updateClock, 1000);
+  updateClock();
+
+  // Init
+  renderAll();
+  document.getElementById('topbar-add-btn').style.display = 'none';
+</script>
+</body>
+</html>
