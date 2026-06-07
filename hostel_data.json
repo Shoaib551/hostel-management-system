@@ -1,0 +1,66 @@
+{
+  "students": [
+    {
+      "id": 1780672650629,
+      "name": "Muhammad Shoaib",
+      "room": 122,
+      "fee": 14000
+    },
+    {
+      "id": 1780672689837,
+      "name": "Munib Ullah",
+      "room": 100,
+      "fee": 0
+    },
+    {
+      "id": 1780672713382,
+      "name": "Istafam Abbas",
+      "room": 98,
+      "fee": 0
+    }
+  ],
+  "rooms": [
+    {
+      "number": 122,
+      "type": "Double",
+      "occupied": true
+    },
+    {
+      "number": 100,
+      "type": "Double",
+      "occupied": true
+    },
+    {
+      "number": 98,
+      "type": "Single",
+      "occupied": true
+    }
+  ],
+  "maintenance": [],
+  "payments": [
+    {
+      "studentIdx": 0,
+      "name": "Muhammad Shoaib",
+      "amount": 5000,
+      "date": "6/5/2026"
+    },
+    {
+      "studentIdx": 0,
+      "name": "Muhammad Shoaib",
+      "amount": 1000,
+      "date": "6/5/2026"
+    },
+    {
+      "studentIdx": 0,
+      "name": "Muhammad Shoaib",
+      "amount": 1000,
+      "date": "6/5/2026"
+    },
+    {
+      "studentIdx": 0,
+      "name": "Muhammad Shoaib",
+      "amount": 7000,
+      "date": "6/5/2026"
+    }
+  ]
+}
